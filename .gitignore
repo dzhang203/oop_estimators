@@ -1,3 +1,4 @@
 env
 notebooks
 .python-version
+src/__pycache__/
