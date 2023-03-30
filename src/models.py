@@ -1,7 +1,7 @@
 import pandas as pd 
 import seaborn as sns
 import matplotlib.pyplot as plt
-from utility_stuff import *
+from src.utility_stuff import *
 
 # classes
 class DataWithContext():
@@ -85,6 +85,7 @@ class DataWithContext():
                 kde=True,
             )
             plt.show()
+
 
     def explore_treatment(self):
         # TODO: write similar to explore_outcome
