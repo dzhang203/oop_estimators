@@ -1,9 +1,16 @@
 # constants and utility functions/classes
+import pandas as pd
 
-# constants related to DataFrames
-# UNIT_ID = 'unit_id'
-# TREATMENT_ID = 'treatment_id'
-# TIME_ID = 'time_id'
+# CONVENIECE FUNCS FOR DATA HANDLING
+def GetInlierDataFromQuantiles(
+    srs: pd.Series,
+    q_left: float=0.02,
+    q_right: float=0.98,
+):
+    return srs[(
+        (srs >= srs.quantile(q_left))
+        & (srs <= srs.quantile(q_right))
+    )]
 
 
 # new Exception subclass

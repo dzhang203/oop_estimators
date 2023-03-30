@@ -14,9 +14,9 @@ class DataWithContext():
     def __init__(
         self,
         data: pd.DataFrame,
-        unit_id: str,
         treatment_id: str,
         outcome_id: str,
+        unit_id: str=None,
         time_id: str=None,
     ) -> None:
         self.data = data 
@@ -35,26 +35,45 @@ class DataWithContext():
         if len(data[outcome_id].drop_duplicates()) > 2:
             self.is_binary_treatment = False 
 
+        # extract outcome data & treatment data
+        self.outcome_data = self.data[self.outcome_id]
+        self.treatment_data = self.data[self.treatment_id]
+
+    def explore(self):
+        self.explore_outcome()
+        self.explore_treatment()
+        self.explore_y_x()
+
     def explore_outcome(self):
-        outcome_data = self.data[self.outcome_id]  # pd.Series
-        
+        self._explore_univariate(
+            self.outcome_data,
+            self.outcome_id,
+        )
+
+    def explore_treatment(self):
+        self._explore_univariate(
+            self.treatment_data,
+            self.treatment_id,
+        )
+
+    def _explore_univariate(self, srs, var_name=''): 
         # binary outcome data
         if self.is_binary_outcome:
-            print(outcome_data.value_counts())
+            print(srs.value_counts())
             plt.clf()
-            sns.barplot(x=outcome_data)
+            sns.barplot(x=srs)
             plt.show()
 
         # continuous outcome data
         else:
-            outcome_mean = outcome_data.mean()
+            outcome_mean = srs.mean()
             print('{} mean: {:.3f}'.format(
-                self.outcome_id,
-                outcome_mean
+                var_name,
+                outcome_mean,
             ))
 
             print('\nQuantiles:')
-            print(outcome_data.quantile([
+            print(srs.quantile([
                 0.05,
                 0.10,
                 0.50,
@@ -65,33 +84,39 @@ class DataWithContext():
             plt.clf()
             print('\nFull Histogram:')
             sns.histplot(
-                x=outcome_data,
+                x=srs,
                 stat='proportion',
                 bins=15,
                 kde=True,
             )
             plt.show()
 
+            srs_inliers = GetInlierDataFromQuantiles(srs)
             plt.clf()
             print('Histogram with Outliers Removed')
-            outcome_data_inliers = outcome_data[(
-                (outcome_data > outcome_data.quantile(0.02))
-                & (outcome_data < outcome_data.quantile(0.98))
-            )]
             sns.histplot(
-                x=outcome_data_inliers,
+                x=srs_inliers,
                 stat='proportion',
                 bins=15,
                 kde=True,
             )
             plt.show()
+    
+    def explore_y_x(self):
+        self._explore_bivariate(
+            self.treatment_data,
+            self.outcome_data,
+        )
 
-
-    def explore_treatment(self):
-        # TODO: write similar to explore_outcome
-        # but, maybe refactor to belong to Experiment() class?
-        raise TodoException
-
+    def _explore_bivariate(
+        self,
+        x,
+        y,
+    ):
+        print('Full Scatterplot:')
+        plt.clf()
+        sns.scatterplot(x=x, y=y)
+        plt.show()
 
     def make_experiment(
         self,
