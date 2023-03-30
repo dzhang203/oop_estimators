@@ -8,6 +8,12 @@ TREATMENT_ID = 'treatment_id'
 TIME_ID = 'time_id'
 
 
+# new Exception subclass
+class TodoException(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__("Sorry, this method is not yet implemented :(")
+
+
 # classes
 class DataWithContext():
     """
@@ -91,6 +97,12 @@ class DataWithContext():
             )
             plt.show()
 
+    def explore_treatment(self):
+        # TODO: write similar to explore_outcome
+        # but, maybe refactor to belong to Experiment() class?
+        raise TodoException
+
+
     def make_experiment(
         self,
         data_structure='cross',
@@ -98,8 +110,7 @@ class DataWithContext():
         discrete_covariates=[],
         interactions=[],
     ):
-        raise Exception("Sorry, this method is not implemented yet :(")
-        return None
+        raise TodoException
 
 
 class Experiment():
