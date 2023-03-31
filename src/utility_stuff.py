@@ -12,6 +12,13 @@ def GetInlierDataFromQuantiles(
         & (srs <= srs.quantile(q_right))
     )]
 
+def PandasToArrayAndNames(
+    df: pd.DataFrame,
+    cols: list,
+):
+    name_list = cols
+    array = df.loc[:,cols].to_numpy()
+    return array, name_list
 
 # new Exception subclass
 class TodoException(Exception):
