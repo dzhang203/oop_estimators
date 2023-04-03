@@ -222,16 +222,16 @@ class CrossExperiment():
             @ self.Y
         )
         residuals = self.Y - self.X @ beta
-        residual_var = np.var(residuals)
+        degrees_of_freedom = len(beta)
+        residual_var = np.var(residuals, ddof=degrees_of_freedom)
         N = len(self.Y)
-        # TODO: this standard error calc is wrong according to statsmodels
         beta_std_error = np.sqrt(np.diag(
             alg.inv(
                 self.X.T 
                 @ self.X
             )
             * residual_var 
-            / N
+            # / N
         ))
 
         return CrossResult(
