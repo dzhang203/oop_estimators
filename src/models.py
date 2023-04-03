@@ -208,42 +208,83 @@ class CrossExperiment():
         std_error_type: str='iid',
     ):
         if std_error_type == 'iid':
-            return self._estimate_iid()
+            return self._estimate_iid(std_error_type)
+        elif std_error_type == 'White':
+            return self._estimate_white(std_error_type)
         else:
             raise TodoException
-    
-    def _estimate_iid(self):
+
+    def _estimate_iid(self, std_error_type):
+        XX_inv = alg.inv(self.X.T @ self.X)  # (k,k) matrix
         beta = (
-            alg.inv(
-                self.X.T
-                @ self.X
-            )
+            XX_inv
             @ self.X.T
             @ self.Y
         )
         residuals = self.Y - self.X @ beta
         degrees_of_freedom = len(beta)
-        residual_var = np.var(residuals, ddof=degrees_of_freedom)
-        N = len(self.Y)
+        residual_var = np.var(residuals, ddof=degrees_of_freedom)  # int
+        N = len(self.Y)  # int 
+        # beta_std_error = np.sqrt(np.diag(
+        #     XX_inv
+        #     * residual_var 
+        # ))
+        beta_var_matrix = (
+            XX_inv
+            * residual_var
+        )
         beta_std_error = np.sqrt(np.diag(
-            alg.inv(
-                self.X.T 
-                @ self.X
-            )
-            * residual_var 
-            # / N
+            beta_var_matrix
         ))
 
         return CrossResult(
             beta, 
             self.X_name_list, 
             beta_std_error,
-            'iid',
+            std_error_type,
             self.Y,
             self.X, 
             residuals,
             self.formula,
         )
+    
+    def _estimate_white(self, std_error_type):
+        XX_inv = alg.inv(self.X.T @ self.X)  # (k,k) matrix
+        print('XX_inv shape {}'.format(XX_inv.shape))
+        beta = (
+            XX_inv 
+            @ self.X.T 
+            @ self.Y
+        )
+        residuals = self.Y - self.X @ beta  # (n,1) vector
+        # G = self.X.T @ residuals  # (k,1) vector
+        N = len(self.Y)  # int
+        # GG_diag = np.diag(np.diag(G @ G.T))
+        beta_var_matrix = (
+            XX_inv 
+            @ self.X.T 
+            @ np.diag(np.diag(residuals @ residuals.T))
+            @ self.X
+            @ XX_inv
+        )
+        beta_std_error = np.sqrt(np.diag(
+            beta_var_matrix
+        ))
+        # TODO: Write up lessons:
+        # 1) You can't just use "G" i.e. self.X.T @ residuals, directly (why?...)
+        # 2) Convince myself about the correctness of not dividing anything here by N?...
+        #   I guess that's just what the derivation gives?
+        
+        return CrossResult(
+            beta, 
+            self.X_name_list, 
+            beta_std_error,
+            std_error_type,
+            self.Y,
+            self.X, 
+            residuals,
+            self.formula,
+        ) 
 
 
 class CrossResult():
