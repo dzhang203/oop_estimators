@@ -211,6 +211,8 @@ class CrossExperiment():
             return self._estimate_iid(std_error_type)
         elif std_error_type == 'White':
             return self._estimate_white(std_error_type)
+        elif std_error_type == 'DavMacWhite':
+            return self._estimate_davmacwhite(std_error_type)
         else:
             raise TodoException
 
@@ -286,6 +288,8 @@ class CrossExperiment():
             self.formula,
         ) 
 
+    def _estimate_davmacwhite(self, std_error_type):
+        raise TodoException
 
 class CrossResult():
     def __init__(
