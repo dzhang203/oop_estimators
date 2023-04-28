@@ -3,6 +3,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt 
 import statsmodels.api as sm
+import scipy.stats as st
 from src.utility_stuff import *
 from scipy import linalg as alg 
 
@@ -206,6 +207,7 @@ class CrossExperiment():
     def estimate(
         self,
         std_error_type: str='iid',
+        cluster_var_list=[],
     ):
         if std_error_type == 'iid':
             return self._estimate_iid(std_error_type)
@@ -213,6 +215,9 @@ class CrossExperiment():
             return self._estimate_white(std_error_type)
         elif std_error_type == 'DavMacWhite':
             return self._estimate_davmacwhite(std_error_type)
+        elif std_error_type in ('cluster', 'clustered'):
+            print(cluster_var_list) 
+            raise TodoException
         else:
             raise TodoException
 
@@ -313,4 +318,16 @@ class CrossResult():
         self.formula = formula
     
     def summary(self):
-        raise TodoException
+        print(f'\n[standard errors: {self.std_error_type}]')
+        print(self.formula)
+        print('\nCovariate \\ Coef. \\ Std. Error \\ p-value')
+        for beta_name, beta_est, beta_se in zip(
+            self.beta_names,
+            self.beta,
+            self.beta_std_error 
+        ):
+            beta_est_value = beta_est[0]
+            z_value_abs = np.abs(beta_est_value / beta_se)
+            p_value = 2 * (1 - st.norm.cdf(z_value_abs))
+            print(f'{beta_name} \\ {beta_est_value:.3f} \\ {beta_se:.3f} \\ {p_value:.3f}')
+        return
